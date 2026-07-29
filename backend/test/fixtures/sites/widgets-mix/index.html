@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Widget zoo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="zoo-header"><h1>Widget zoo</h1></header>
+  <main>
+    <section class="icons">
+      <h2>Icons</h2>
+      <svg class="menu-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="#000" stroke-width="2"/></svg>
+      <span class="fa fa-star"></span>
+    </section>
+    <section class="media">
+      <h2>Media</h2>
+      <video src="movie.mp4" controls width="640" height="360"></video>
+      <iframe src="/embed.html" width="560" height="315" title="Embedded demo"></iframe>
+    </section>
+    <section class="complex">
+      <h2>The hard stuff</h2>
+      <canvas id="chart" width="600" height="200"></canvas>
+      <svg class="wave" width="800" height="300" viewBox="0 0 800 300"><path d="M0 150 C 200 50, 400 250, 800 150" fill="none" stroke="#00f" stroke-width="3"/></svg>
+      <my-counter data-start="5"></my-counter>
+      <form action="/subscribe" class="signup">
+        <input type="email" placeholder="you@example.com">
+        <button type="submit">Subscribe</button>
+      </form>
+      <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Uptime</td><td>99.99%</td></tr>
+      </table>
+    </section>
+  </main>
+  <script>
+    customElements.define('my-counter', class extends HTMLElement {
+      connectedCallback() { this.textContent = 'Count: ' + (this.dataset.start || 0); }
+    });
+  </script>
+</body>
+</html>

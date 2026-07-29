@@ -1,0 +1,12 @@
+* { margin: 0; box-sizing: border-box; }
+body { font-family: Georgia, serif; color: #222222; line-height: 1.6; }
+.site-nav { display: flex; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid #dddddd; }
+.menu { display: flex; gap: 20px; list-style: none; }
+.post { max-width: 680px; margin: 0 auto; padding: 56px 24px; }
+.post h1 { font-size: 40px; margin-bottom: 12px; }
+.post h2 { font-size: 26px; margin: 32px 0 12px; }
+.post p { margin-bottom: 16px; }
+.byline { color: #777777; font-size: 14px; }
+blockquote { border-left: 4px solid #cccccc; padding: 8px 20px; margin: 24px 0; color: #555555; font-style: italic; }
+.post ul, .post ol { margin: 0 0 16px 24px; }
+.site-footer { padding: 40px; text-align: center; background-color: #111111; color: #aaaaaa; }

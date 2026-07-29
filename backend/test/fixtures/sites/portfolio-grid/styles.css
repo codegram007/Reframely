@@ -1,0 +1,11 @@
+* { margin: 0; box-sizing: border-box; }
+body { font-family: Georgia, serif; color: #1c1c1c; }
+.masthead { padding: 56px 32px 24px; text-align: center; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 48px; }
+.gallery figure { margin: 0; }
+.gallery img { width: 100%; height: auto; display: block; }
+.gallery figcaption { padding: 8px 0; font-size: 14px; color: #666666; }
+.colophon { padding: 40px; text-align: center; background-color: #f4f4f4; }
+@media (max-width: 480px) {
+  .gallery { grid-template-columns: 1fr; }
+}

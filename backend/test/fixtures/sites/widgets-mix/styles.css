@@ -1,0 +1,11 @@
+* { margin: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; color: #222222; }
+.zoo-header { padding: 32px; background-color: #052e16; color: #ffffff; }
+main section { padding: 48px 32px; }
+.icons { background-color: #f8fafc; }
+.fa { display: inline-block; width: 20px; height: 20px; }
+.fa-star { background-color: transparent; }
+canvas { border: 1px solid #cccccc; display: block; margin-bottom: 24px; }
+.signup { margin: 24px 0; }
+table { border-collapse: collapse; }
+td, th { border: 1px solid #cccccc; padding: 8px 12px; }

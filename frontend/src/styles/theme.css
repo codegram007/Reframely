@@ -1,0 +1,76 @@
+/**
+ * Vibestudio theme tokens.
+ *
+ * Identity — "Electric violet on slate":
+ *   A premium builder-tool aesthetic in the Linear/Framer register. The
+ *   neutrals are cool slate (a hint of blue) rather than pure gray, so
+ *   the UI reads as engineered and calm; the single accent is an
+ *   electric violet (#6d5efc), used sparingly for primary actions,
+ *   selection, and focus. Elevation is soft and layered (see the shadow
+ *   scale) — no harsh drop shadows, no default-shadcn slate-500 look.
+ *
+ * All values are HSL channel triplets ("H S% L%") so Tailwind can apply
+ * <alpha-value>. Light is the default; `.dark` on <html> swaps the set.
+ */
+
+:root {
+  /* Surfaces — cool slate, near-white in light mode */
+  --canvas: 240 20% 97%;          /* app background behind panels */
+  --surface: 0 0% 100%;           /* cards, bars, panels */
+  --surface-raised: 0 0% 100%;    /* popovers, menus (adds shadow) */
+  --surface-sunken: 240 20% 98.5%;/* insets, code view, canvas frame */
+
+  --border: 240 14% 92%;
+  --border-strong: 240 12% 86%;
+
+  --foreground: 240 24% 12%;      /* primary text */
+  --foreground-muted: 240 8% 42%; /* secondary text */
+  --foreground-subtle: 240 6% 60%;/* tertiary / placeholder */
+
+  /* Brand accent — electric violet */
+  --accent: 248 90% 66%;
+  --accent-hover: 248 82% 60%;
+  --accent-foreground: 0 0% 100%;
+  --accent-subtle: 248 90% 96%;   /* accent-tinted background wash */
+
+  --ring: 248 90% 66%;
+
+  --success: 152 62% 42%;
+  --warning: 38 92% 50%;
+  --danger: 356 75% 55%;
+
+  --shadow: 240 40% 20%;
+
+  color-scheme: light;
+}
+
+.dark {
+  /* Surfaces — deep cool slate, layered lighter as they rise */
+  --canvas: 240 20% 6%;
+  --surface: 240 16% 9.5%;
+  --surface-raised: 240 15% 12.5%;
+  --surface-sunken: 240 22% 5%;
+
+  --border: 240 12% 17%;
+  --border-strong: 240 12% 24%;
+
+  --foreground: 240 20% 96%;
+  --foreground-muted: 240 8% 66%;
+  --foreground-subtle: 240 7% 48%;
+
+  /* Accent lifts slightly in dark for punch on dark surfaces */
+  --accent: 250 95% 72%;
+  --accent-hover: 250 95% 78%;
+  --accent-foreground: 240 30% 8%;
+  --accent-subtle: 248 40% 18%;
+
+  --ring: 250 95% 72%;
+
+  --success: 152 55% 50%;
+  --warning: 38 92% 58%;
+  --danger: 356 78% 62%;
+
+  --shadow: 240 60% 2%;
+
+  color-scheme: dark;
+}

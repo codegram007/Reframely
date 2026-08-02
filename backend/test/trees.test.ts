@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app.js';
 import { ProjectTreeService } from '../src/services/trees/index.js';
 import { InMemoryObjectStore } from '../src/services/storage/object-store.js';
-import { JwtAuthService } from '../src/services/auth/index.js';
+import { SupabaseAuthService } from '../src/services/auth/index.js';
 import { ProjectAccessService } from '../src/services/projects/index.js';
 import { InMemoryImportRepository } from '../src/services/storage/import-repository.js';
 
@@ -77,7 +77,13 @@ describe('tree routes', () => {
       errorCode: null,
       createdAt: '2026-07-29T00:00:00.000Z',
     });
-    const auth = new JwtAuthService('dev');
+    const auth = new SupabaseAuthService({
+      mode: 'on',
+      verifySupabaseToken: async (token) => {
+        if (token === 'owner-token') return { id: 'user-a' };
+        throw new Error('invalid token');
+      },
+    });
     const app = buildApp({
       projectTreeService: new ProjectTreeService(store),
       authService: auth,
@@ -85,32 +91,41 @@ describe('tree routes', () => {
     });
     await app.ready();
     expect((await app.inject({ method: 'GET', url: '/projects/project-a/tree' })).statusCode).toBe(401);
-    const token = await auth.signDevToken({ id: 'user-a' });
     const ok = await app.inject({
       method: 'GET',
       url: '/projects/project-a/tree',
-      headers: { authorization: `Bearer ${token}` },
+      headers: { authorization: 'Bearer owner-token' },
     });
     expect(ok.statusCode).toBe(200);
     await app.close();
   });
 });
 
-describe('auth dev token route', () => {
-  it('mints a token in dev mode without a prior bearer', async () => {
-    const auth = new JwtAuthService('dev');
+describe('auth dev mode', () => {
+  it('uses only the fixed local user and exposes no token-minting endpoint', async () => {
+    const repository = new InMemoryImportRepository();
+    await repository.create({
+      id: 'import-local',
+      projectId: 'project-local',
+      ownerId: 'local-user',
+      sourceType: 'zip',
+      origin: 'site.zip',
+      totalBytes: 1,
+      fileCount: 1,
+      status: 'completed',
+      errorCode: null,
+      createdAt: '2026-07-29T00:00:00.000Z',
+    });
+    const auth = new SupabaseAuthService('dev');
     const app = buildApp({
       authService: auth,
-      projectAccessService: new ProjectAccessService(new InMemoryImportRepository()),
+      projectAccessService: new ProjectAccessService(repository),
+      projectTreeService: new ProjectTreeService(new InMemoryObjectStore()),
     });
     await app.ready();
     const res = await app.inject({ method: 'GET', url: '/auth/dev-token?user=local-user' });
-    expect(res.statusCode).toBe(200);
-    const body = res.json() as { token: string };
-    expect(body.token.length).toBeGreaterThan(20);
-    await expect(auth.verifyAuthorizationHeader(`Bearer ${body.token}`)).resolves.toMatchObject({
-      id: 'local-user',
-    });
+    expect(res.statusCode).toBe(404);
+    await expect(auth.verifyAuthorizationHeader(undefined)).resolves.toMatchObject({ id: 'local-user' });
     await app.close();
   });
 });

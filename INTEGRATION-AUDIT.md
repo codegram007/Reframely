@@ -1,7 +1,7 @@
-# Vibestudio FE↔BE Integration Audit
+# Reframely FE↔BE Integration Audit
 
 **Date:** 2026-07-29  
-**Workspace:** `C:\tmp\Vibestudio`  
+**Workspace:** `C:\tmp\Reframely`
 **Live services checked:** frontend Vite `:5173`, backend Fastify `:3000`  
 **Infra (original audit):** MinIO/Postgres down; no `.env`  
 

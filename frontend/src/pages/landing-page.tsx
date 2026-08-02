@@ -26,7 +26,7 @@ import { ThemeToggle } from '@/components/brand/theme-toggle';
 import { cn } from '@/lib/utils';
 
 /**
- * Marketing landing page for Vibestudio.
+ * Marketing landing page for Reframely.
  *
  * Positioning: vibe coders, marketers, founders, freelancers, and business
  * owners who generate sites with AI — then polish them visually instead of
@@ -167,7 +167,7 @@ function SiteNav({ onCta }: { onCta: () => void }) {
       )}
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 sm:px-8">
-        <Link to="/" className="shrink-0 transition-transform duration-300 hover:scale-[1.02]" aria-label="Vibestudio home">
+        <Link to="/" className="shrink-0 transition-transform duration-300 hover:scale-[1.02]" aria-label="Reframely home">
           <Logo />
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-foreground-muted md:flex">
@@ -278,7 +278,7 @@ function Hero({ onCta }: { onCta: () => void }) {
           <p className="mt-5 max-w-lg text-balance text-md text-foreground-muted sm:text-lg">
             You generated a beautiful site with AI — then spent the rest of your
             tokens re-prompting for every color, spacing, and copy tweak.
-            Vibestudio imports that site into a full visual editor so you keep
+            Reframely imports that site into a full visual editor so you keep
             total control without another chat marathon.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -320,7 +320,7 @@ function HeroMockup() {
           <span className="h-2.5 w-2.5 rounded-full bg-warning/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-success/80" />
           <span className="ml-2 flex-1 truncate rounded-md bg-surface/80 px-2 py-0.5 text-2xs text-foreground-subtle backdrop-blur">
-            vibestudio · imported / pricing.html
+            reframely · imported / pricing.html
           </span>
         </div>
 
@@ -547,7 +547,7 @@ function HowItWorks() {
       visual: (
         <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
           <div className="landing-glass rounded-lg px-4 py-3 text-center">
-            <p className="text-2xs text-foreground-subtle">preview.vibestudio.app</p>
+            <p className="text-2xs text-foreground-subtle">preview.reframely.app</p>
             <p className="mt-1 text-xs font-medium text-success">Live</p>
           </div>
           <div className="flex items-center gap-2 text-2xs text-foreground-muted">
@@ -565,7 +565,7 @@ function HowItWorks() {
           <SectionHeading
             eyebrow="How it works"
             title="From “one more prompt…” to “I just fixed it”"
-            subtitle="AI is great at the first draft. Vibestudio is for everything after — without emptying your credit balance."
+            subtitle="AI is great at the first draft. Reframely is for everything after — without emptying your credit balance."
           />
         </Reveal>
         <div className="mt-12 grid gap-5 lg:grid-cols-3">
@@ -647,7 +647,7 @@ function Features() {
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal>
           <SectionHeading
-            eyebrow="Why Vibestudio"
+            eyebrow="Why Reframely"
             title="Full creative power. Far fewer wasted credits."
             subtitle="You already paid for a great first draft. Don’t spend the rest of your quota nudging pixels in chat."
           />
@@ -759,7 +759,7 @@ function AiSection({ onCta }: { onCta: () => void }) {
                 caption="Credits burning on tiny tweaks"
               />
               <BeforeAfter
-                label="After Vibestudio"
+                label="After Reframely"
                 accentClass="bg-accent"
                 headline="Ship the site you already started"
                 highlight
@@ -854,7 +854,7 @@ function Faq() {
   const items = [
     {
       q: 'Will this really save ~80% of my AI credits?',
-      a: 'Most post-generation work is micro-edits — colors, spacing, copy, mobile order — that people burn tokens re-prompting. Vibestudio moves those into a free visual canvas. You still can use AI for bigger changes, but you don’t need a chat for every pixel. Results vary by workflow; the 80% figure reflects typical polish loops after an AI first draft.',
+      a: 'Most post-generation work is micro-edits — colors, spacing, copy, mobile order — that people burn tokens re-prompting. Reframely moves those into a free visual canvas. You still can use AI for bigger changes, but you don’t need a chat for every pixel. Results vary by workflow; the 80% figure reflects typical polish loops after an AI first draft.',
     },
     {
       q: 'I built my site with an AI tool — will import work?',
@@ -866,7 +866,7 @@ function Faq() {
     },
     {
       q: 'Does this change my live production site?',
-      a: 'No. Import is a non-destructive snapshot into your Vibestudio project. Production stays put until you deliberately deploy or replace it with an export.',
+      a: 'No. Import is a non-destructive snapshot into your Reframely project. Production stays put until you deliberately deploy or replace it with an export.',
     },
     {
       q: 'Can I export and leave anytime?',

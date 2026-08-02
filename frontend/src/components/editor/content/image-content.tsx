@@ -11,7 +11,7 @@ import { ImageCropper } from './image-cropper';
 
 /**
  * Image content: prefer backend asset upload (B8) so `src` is a hosted
- * `/api/projects/.../assets/file/...` URL. Falls back to a data URL only
+ * time-limited object-store URL. Falls back to a data URL only
  * when there is no project id (demo) or the upload request fails.
  */
 export function ImageContent({ node }: { node: WidgetNode }) {
@@ -134,7 +134,7 @@ export function ImageContent({ node }: { node: WidgetNode }) {
           }}
         />
         {error && <p className="mt-1 text-2xs text-danger">{error}</p>}
-        {props.src.startsWith('/api/') && (
+        {props.src && !props.src.startsWith('data:') && (
           <p className="mt-1 text-2xs text-foreground-subtle">Stored on project assets (B8).</p>
         )}
       </ContentField>
@@ -184,7 +184,7 @@ export function ImageContent({ node }: { node: WidgetNode }) {
             typeof props.src === 'string' && !props.src.startsWith('data:') ? props.src : 'data'
           }
           defaultValue={props.src.startsWith('data:') ? '' : props.src}
-          placeholder="https://… or /api/projects/…/assets/file/…"
+          placeholder="https://…"
           spellCheck={false}
           onBlur={(e) => {
             const v = e.target.value.trim();

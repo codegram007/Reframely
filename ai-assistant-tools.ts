@@ -1,5 +1,5 @@
 /**
- * AI Assistant Tool Schema for Vibestudio
+ * AI Assistant Tool Schema for Reframely
  *
  * Composable tool-calling API for Claude to propose edits to the widget tree.
  * Every tool call produces a diff/patch object shown to the user before commit.

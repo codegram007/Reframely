@@ -12,7 +12,7 @@
 import { api, NetworkError, ApiError } from '@/lib/api/client';
 import type { WidgetTree } from '@/lib/schema';
 
-const STORAGE_PREFIX = 'vibestudio:tree-versions:';
+const STORAGE_PREFIX = 'reframely:tree-versions:';
 const MAX_LOCAL = 20;
 
 export interface LocalTreeVersion {

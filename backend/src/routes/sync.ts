@@ -16,7 +16,9 @@ import {
  * (see `buildApp`). Wrapped with fastify-plugin so the WS route is registered
  * on that same context (otherwise `@fastify/websocket`'s onRoute hook never
  * sees the route). Ownership is enforced by the B14 auth plugin via
- * `projectId` before the upgrade handler runs.
+ * `projectId` before the upgrade handler runs. Browser clients pass the
+ * Supabase access token as `access_token` because WebSocket cannot set an
+ * Authorization header; non-browser clients may use the bearer header.
  */
 export function syncRoutes(hub: PageSyncHub): FastifyPluginAsync {
   const plugin: FastifyPluginAsync = async (app) => {
@@ -83,7 +85,7 @@ export function syncRoutes(hub: PageSyncHub): FastifyPluginAsync {
   };
 
   return fp(plugin, {
-    name: 'vibestudio-sync',
+    name: 'reframely-sync',
     dependencies: ['@fastify/websocket'],
   });
 }

@@ -23,7 +23,9 @@ describe('AssetService', () => {
     expect(result.key).toBe('projects/proj-1/assets/assetfixed.png');
     expect(result.contentType).toBe('image/png');
     expect(result.bytes).toBe(6);
-    expect(result.url).toBe('/api/projects/proj-1/assets/file/assetfixed.png');
+    expect(result.url).toBe(
+      'memory://download/projects%2Fproj-1%2Fassets%2Fassetfixed.png?ttl=3600',
+    );
     expect(result.expiresAt).toBe('2026-07-27T01:00:00.000Z');
     expect(store.objects.has(result.key)).toBe(true);
   });
@@ -76,7 +78,9 @@ describe('asset routes', () => {
     const json = res.json();
     expect(json.assetId).toBe('a1');
     expect(json.projectId).toBe('proj-x');
-    expect(json.url).toBe('/api/projects/proj-x/assets/file/a1.png');
+    expect(json.url).toBe(
+      'memory://download/projects%2Fproj-x%2Fassets%2Fa1.png?ttl=604800',
+    );
 
     const get = await app.inject({
       method: 'GET',

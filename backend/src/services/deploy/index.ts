@@ -72,7 +72,7 @@ interface StoredDeployStatus {
 export interface DeployServiceDeps {
   objectStore: ObjectStore;
   codegenService: CodegenService;
-  /** Public base used to mint preview URLs, e.g. https://preview.vibestudio.app */
+  /** Public base used to mint preview URLs, e.g. https://preview.reframely.app */
   publicBaseUrl?: string;
   idFn?: () => string;
   now?: () => Date;
@@ -91,7 +91,7 @@ export class DeployService {
     this.objectStore = deps.objectStore;
     this.codegenService = deps.codegenService;
     this.publicBaseUrl =
-      deps.publicBaseUrl ?? env.DEPLOY_BASE_URL ?? 'https://preview.vibestudio.app';
+      deps.publicBaseUrl ?? env.DEPLOY_BASE_URL ?? 'https://preview.reframely.app';
     this.idFn = deps.idFn ?? (() => `dep_${randomUUID().replace(/-/g, '').slice(0, 12)}`);
     this.now = deps.now ?? (() => new Date());
   }
@@ -220,7 +220,7 @@ export class DeployService {
     try {
       return new URL(this.publicBaseUrl).hostname;
     } catch {
-      return 'cname.vibestudio.app';
+      return 'cname.reframely.app';
     }
   }
 

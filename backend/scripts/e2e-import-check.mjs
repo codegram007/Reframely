@@ -44,17 +44,8 @@ execSync(
   `powershell -NoProfile -Command "Compress-Archive -Path '${fixture}\\*' -DestinationPath '${zipPath}' -Force"`,
 );
 
-const tok = await req('GET', '/auth/dev-token?user=local-user');
-console.log('dev-token', tok.status);
-if (tok.status !== 200) {
-  console.log(tok.body);
-  process.exit(1);
-}
-const { token } = JSON.parse(tok.body);
-const auth = { authorization: `Bearer ${token}` };
-
-const no = await req('GET', '/projects/x/versions');
-console.log('no-auth versions', no.status);
+const inaccessible = await req('GET', '/projects/x/versions');
+console.log('unknown project', inaccessible.status);
 
 const zip = fs.readFileSync(zipPath);
 const boundary = '----vsboundary';
@@ -64,22 +55,21 @@ const head = Buffer.from(
 const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
 const payload = Buffer.concat([head, zip, tail]);
 const imp = await req('POST', '/imports/zip', payload, {
-  ...auth,
   'content-type': `multipart/form-data; boundary=${boundary}`,
 });
 console.log('import', imp.status, imp.body.slice(0, 400));
 if (imp.status !== 200) process.exit(1);
 
 const { importId, projectId } = JSON.parse(imp.body);
-const snap = await req('POST', `/imports/${importId}/snapshot`, {}, auth);
+const snap = await req('POST', `/imports/${importId}/snapshot`, {});
 console.log('snapshot', snap.status, snap.body.slice(0, 250));
 if (snap.status !== 200) process.exit(1);
 
-const cls = await req('POST', `/imports/${importId}/classify`, {}, auth);
+const cls = await req('POST', `/imports/${importId}/classify`, {});
 console.log('classify', cls.status, cls.body.slice(0, 300));
 if (cls.status !== 200) process.exit(1);
 
-const trees = await req('GET', `/projects/${projectId}/tree`, null, auth);
+const trees = await req('GET', `/projects/${projectId}/tree`);
 console.log('trees', trees.status);
 const tj = JSON.parse(trees.body);
 const root = tj.primary?.tree?.root;

@@ -45,10 +45,7 @@ export interface AssetServiceDeps {
   urlTtlSeconds?: number;
   idFn?: () => string;
   now?: () => Date;
-  /**
-   * Browser-fetchable URL for the editor/canvas (same-origin via Vite proxy).
-   * Defaults to `/api/projects/{projectId}/assets/file/{assetId}{ext}`.
-   */
+  /** Optional URL override; defaults to a time-limited object-store URL. */
   publicUrl?: (info: {
     projectId: string;
     assetId: string;
@@ -98,12 +95,12 @@ export class AssetService {
   private readonly ttlSeconds: number;
   private readonly idFn: () => string;
   private readonly now: () => Date;
-  private readonly publicUrl: (info: {
+  private readonly publicUrl: ((info: {
     projectId: string;
     assetId: string;
     ext: string;
     key: string;
-  }) => string;
+  }) => string) | undefined;
 
   constructor(deps: AssetServiceDeps) {
     this.objectStore = deps.objectStore;
@@ -111,10 +108,7 @@ export class AssetService {
     this.ttlSeconds = deps.urlTtlSeconds ?? DEFAULT_TTL;
     this.idFn = deps.idFn ?? (() => randomUUID().replace(/-/g, '').slice(0, 16));
     this.now = deps.now ?? (() => new Date());
-    this.publicUrl =
-      deps.publicUrl ??
-      (({ projectId, assetId, ext }) =>
-        `/api/projects/${projectId}/assets/file/${assetId}${ext}`);
+    this.publicUrl = deps.publicUrl;
   }
 
   async upload(
@@ -143,7 +137,9 @@ export class AssetService {
     const key = `projects/${projectId}/assets/${assetId}${ext}`;
     await this.objectStore.put(key, file.buffer, contentType);
 
-    const url = this.publicUrl({ projectId, assetId, ext, key });
+    const url = this.publicUrl
+      ? this.publicUrl({ projectId, assetId, ext, key })
+      : await this.objectStore.signedUrl(key, this.ttlSeconds);
     const expiresAt = new Date(this.now().getTime() + this.ttlSeconds * 1000).toISOString();
 
     return {

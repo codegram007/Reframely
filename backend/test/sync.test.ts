@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app.js';
-import { JwtAuthService } from '../src/services/auth/index.js';
+import { SupabaseAuthService } from '../src/services/auth/index.js';
 import { ProjectAccessService } from '../src/services/projects/index.js';
 import {
   PageSyncHub,
@@ -262,7 +262,13 @@ describe('sync routes (WebSocket)', () => {
       errorCode: null,
       createdAt: NOW,
     });
-    const auth = new JwtAuthService('dev');
+    const auth = new SupabaseAuthService({
+      mode: 'on',
+      verifySupabaseToken: async (token) => {
+        if (token === 'user-a' || token === 'user-b') return { id: token };
+        throw new Error('invalid token');
+      },
+    });
     const app = buildApp({
       pageSyncHub: new PageSyncHub(),
       authService: auth,
@@ -270,12 +276,10 @@ describe('sync routes (WebSocket)', () => {
     });
     await app.ready();
 
-    const ownerToken = await auth.signDevToken({ id: 'user-a' });
-    const otherToken = await auth.signDevToken({ id: 'user-b' });
-
-    const owner = await openSyncSocket(app, '/projects/project-a/pages/home/sync', {
-      headers: { authorization: `Bearer ${ownerToken}` },
-    });
+    const owner = await openSyncSocket(
+      app,
+      '/projects/project-a/pages/home/sync?access_token=user-a',
+    );
     await expect(owner.next((m) => m.type === 'welcome')).resolves.toMatchObject({
       type: 'welcome',
       projectId: 'project-a',
@@ -283,9 +287,7 @@ describe('sync routes (WebSocket)', () => {
     owner.close();
 
     await expect(
-      openSyncSocket(app, '/projects/project-a/pages/home/sync', {
-        headers: { authorization: `Bearer ${otherToken}` },
-      }),
+      openSyncSocket(app, '/projects/project-a/pages/home/sync?access_token=user-b'),
     ).rejects.toThrow();
 
     await expect(openSyncSocket(app, '/projects/project-a/pages/home/sync')).rejects.toThrow();

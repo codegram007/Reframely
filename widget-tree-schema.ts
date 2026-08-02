@@ -1,5 +1,5 @@
 /**
- * Vibestudio Widget Tree Schema
+ * Reframely Widget Tree Schema
  * Version 1.0
  *
  * The single source of truth for the entire application.

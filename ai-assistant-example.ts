@@ -366,7 +366,7 @@ const toolCall6 = {
     widgetType: 'text',
     props: {
       content:
-        '<blockquote>"Vibestudio transformed our workflow. We can now iterate on designs 10x faster."</blockquote><p><strong>Sarah Chen</strong>, Product Designer at Acme Corp</p>',
+        '<blockquote>"Reframely transformed our workflow. We can now iterate on designs 10x faster."</blockquote><p><strong>Sarah Chen</strong>, Product Designer at Acme Corp</p>',
     },
     styles: {
       padding: '24px',
@@ -412,7 +412,7 @@ const patch3 = {
             },
             props: {
               content:
-                '<blockquote>"Vibestudio transformed our workflow. We can now iterate on designs 10x faster."</blockquote><p><strong>Sarah Chen</strong>, Product Designer at Acme Corp</p>',
+                '<blockquote>"Reframely transformed our workflow. We can now iterate on designs 10x faster."</blockquote><p><strong>Sarah Chen</strong>, Product Designer at Acme Corp</p>',
             },
           },
         ],

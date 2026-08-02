@@ -24,7 +24,7 @@ export async function normalizeLiveSite(
   try {
     response = await fetchImpl(parsed.toString(), {
       redirect: 'follow',
-      headers: { 'user-agent': 'VibestudioImporter/0.1 (+https://vibestudio.app)' },
+      headers: { 'user-agent': 'ReframelyImporter/0.1 (+https://reframely.app)' },
     });
   } catch {
     throw new ImportError('SITE_FETCH_FAILED', 'Could not reach the site. Check the URL and try again.');

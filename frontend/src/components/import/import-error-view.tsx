@@ -29,7 +29,7 @@ const HEADLINES: Record<string, string> = {
 /**
  * The PRD's onboarding risk-mitigation: whenever an import looks like it
  * might be a full application rather than a static front-end, remind the
- * user what Vibestudio is for. Always shown for the explicit
+ * user what Reframely is for. Always shown for the explicit
  * NOT_A_FRONTEND_PROJECT code; also shown for fetch/render failures where
  * an app (SPA behind auth, server-rendered) is a likely cause.
  */
@@ -57,7 +57,7 @@ export function ImportErrorView({ error, onRetry }: ImportErrorViewProps) {
         <div className="mt-5 flex w-full max-w-sm items-start gap-3 rounded-lg border border-border bg-surface-sunken p-3 text-left">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
           <p className="text-xs leading-relaxed text-foreground-muted">
-            Vibestudio is a visual editor for{' '}
+            Reframely is a visual editor for{' '}
             <span className="font-medium text-foreground">front-end / design projects</span> —
             static sites, landing pages, and marketing pages built from HTML, CSS, and JavaScript.
             It isn't built for full applications with backend logic, databases, or authenticated

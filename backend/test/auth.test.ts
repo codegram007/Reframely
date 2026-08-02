@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { strToU8, zipSync } from 'fflate';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
-import { JwtAuthService } from '../src/services/auth/index.js';
+import {
+  AuthError,
+  SupabaseAuthService,
+  type SupabaseTokenVerifier,
+} from '../src/services/auth/index.js';
 import { AssetService } from '../src/services/assets/index.js';
 import { ImportService } from '../src/services/import/index.js';
 import { ProjectAccessService } from '../src/services/projects/index.js';
@@ -12,8 +16,16 @@ import { VersionService } from '../src/services/versions/index.js';
 
 const CREATED_AT = '2026-07-29T00:00:00.000Z';
 
-async function tokenFor(auth: JwtAuthService, id: string): Promise<string> {
-  return auth.signDevToken({ id, email: `${id}@example.com` });
+function testVerifier(): SupabaseTokenVerifier {
+  return async (token) => {
+    if (token === 'expired') throw new AuthError('INVALID_TOKEN', 'Token is invalid or expired.');
+    if (!token.startsWith('user-')) throw new Error('Supabase rejected token');
+    return { id: token, email: `${token}@example.com` };
+  };
+}
+
+function authOn(): SupabaseAuthService {
+  return new SupabaseAuthService({ mode: 'on', verifySupabaseToken: testVerifier() });
 }
 
 function seedOwner(
@@ -53,35 +65,44 @@ function multipartFile(
   ]);
 }
 
-describe('JwtAuthService dev mode', () => {
-  it('signs and verifies a local token without Clerk', async () => {
-    const auth = new JwtAuthService('dev');
-    const token = await tokenFor(auth, 'local-user');
-    await expect(auth.verifyAuthorizationHeader(`Bearer ${token}`)).resolves.toMatchObject({
-      id: 'local-user',
-      email: 'local-user@example.com',
-      mode: 'dev',
+describe('SupabaseAuthService', () => {
+  it('accepts a valid Supabase token', async () => {
+    const auth = authOn();
+    await expect(auth.verifyAuthorizationHeader('Bearer user-a')).resolves.toEqual({
+      id: 'user-a',
+      email: 'user-a@example.com',
+      mode: 'on',
     });
   });
 
-  it('rejects missing and invalid bearer tokens', async () => {
-    const auth = new JwtAuthService('dev');
+  it('rejects missing and expired tokens', async () => {
+    const auth = authOn();
     await expect(auth.verifyAuthorizationHeader(undefined)).rejects.toMatchObject({
       code: 'MISSING_TOKEN',
+      statusCode: 401,
     });
-    await expect(auth.verifyAuthorizationHeader('Bearer not-a-jwt')).rejects.toMatchObject({
+    await expect(auth.verifyAuthorizationHeader('Bearer expired')).rejects.toMatchObject({
       code: 'INVALID_TOKEN',
+      statusCode: 401,
+    });
+  });
+
+  it('dev mode bypasses verification with one fixed local user', async () => {
+    const auth = new SupabaseAuthService('dev');
+    await expect(auth.verifyAuthorizationHeader(undefined)).resolves.toEqual({
+      id: 'local-user',
+      email: 'local@example.com',
+      mode: 'dev',
     });
   });
 });
 
 describe('auth and ownership middleware', () => {
-  it('keeps health public and protects project routes', async () => {
+  it('returns 401 for missing/expired tokens, 403 for a non-owner, and allows the owner', async () => {
     const repository = new InMemoryImportRepository();
     await seedOwner(repository);
-    const auth = new JwtAuthService('dev');
     const app = buildApp({
-      authService: auth,
+      authService: authOn(),
       projectAccessService: new ProjectAccessService(repository),
       versionService: new VersionService({ objectStore: new InMemoryObjectStore() }),
     });
@@ -92,62 +113,70 @@ describe('auth and ownership middleware', () => {
     expect((await app.inject({
       method: 'GET',
       url: '/projects/project-a/versions',
-      headers: { authorization: 'Bearer invalid' },
+      headers: { authorization: 'Bearer expired' },
     })).statusCode).toBe(401);
     expect((await app.inject({
       method: 'GET',
       url: '/projects/project-a/versions',
-      headers: { authorization: `Bearer ${await tokenFor(auth, 'user-b')}` },
-    })).statusCode).toBe(404);
+      headers: { authorization: 'Bearer user-b' },
+    })).statusCode).toBe(403);
     const ownerResponse = await app.inject({
       method: 'GET',
       url: '/projects/project-a/versions',
-      headers: { authorization: `Bearer ${await tokenFor(auth, 'user-a')}` },
+      headers: { authorization: 'Bearer user-a' },
     });
     expect(ownerResponse.statusCode).toBe(200);
     expect(ownerResponse.json()).toMatchObject({ projectId: 'project-a', versions: [] });
     await app.close();
   });
 
-  it('allows only the project owner to upload an asset', async () => {
+  it('protects both asset upload and asset download with project ownership', async () => {
     const repository = new InMemoryImportRepository();
     await seedOwner(repository);
-    const auth = new JwtAuthService('dev');
+    const store = new InMemoryObjectStore();
     const app = buildApp({
-      authService: auth,
+      authService: authOn(),
       projectAccessService: new ProjectAccessService(repository),
-      assetService: new AssetService({ objectStore: new InMemoryObjectStore(), idFn: () => 'asset-a' }),
+      assetService: new AssetService({ objectStore: store, idFn: () => 'asset-a' }),
     });
     await app.ready();
     const boundary = '----authboundary';
-    const request = (userId: string) => app.inject({
+    const upload = (token: string) => app.inject({
       method: 'POST',
       url: '/projects/project-a/assets',
       headers: {
-        authorization: `Bearer ${userId}`,
+        authorization: `Bearer ${token}`,
         'content-type': `multipart/form-data; boundary=${boundary}`,
       },
       payload: multipartFile(boundary, 'dot.png', 'image/png', Buffer.from([137, 80, 78, 71])),
     });
 
-    const otherToken = await tokenFor(auth, 'user-b');
-    expect((await request(otherToken)).statusCode).toBe(404);
-    const ownerToken = await tokenFor(auth, 'user-a');
-    const response = await request(ownerToken);
-    expect(response.statusCode).toBe(200);
-    expect(response.json()).toMatchObject({ projectId: 'project-a', assetId: 'asset-a' });
+    expect((await upload('user-b')).statusCode).toBe(403);
+    expect((await upload('user-a')).statusCode).toBe(200);
+    expect((await app.inject({
+      method: 'GET',
+      url: '/projects/project-a/assets/file/asset-a.png',
+    })).statusCode).toBe(401);
+    expect((await app.inject({
+      method: 'GET',
+      url: '/projects/project-a/assets/file/asset-a.png',
+      headers: { authorization: 'Bearer user-b' },
+    })).statusCode).toBe(403);
+    expect((await app.inject({
+      method: 'GET',
+      url: '/projects/project-a/assets/file/asset-a.png',
+      headers: { authorization: 'Bearer user-a' },
+    })).statusCode).toBe(200);
     await app.close();
   });
 });
 
 describe('project ownership persistence', () => {
-  it('stamps a project created through the import route with the JWT subject', async () => {
+  it('stamps a project created through the import route with the Supabase user id', async () => {
     const repository = new InMemoryImportRepository();
-    const store = new InMemoryObjectStore();
-    const service = new ImportService({ objectStore: store, repository });
-    const auth = new JwtAuthService('dev');
+    const service = new ImportService({ objectStore: new InMemoryObjectStore(), repository });
     const app = buildApp({
-      authService: auth,
+      authService: authOn(),
       projectAccessService: new ProjectAccessService(repository),
       importService: service,
     });
@@ -158,7 +187,7 @@ describe('project ownership persistence', () => {
       method: 'POST',
       url: '/imports/zip',
       headers: {
-        authorization: `Bearer ${await tokenFor(auth, 'user-a')}`,
+        authorization: 'Bearer user-a',
         'content-type': `multipart/form-data; boundary=${boundary}`,
       },
       payload: multipartFile(boundary, 'owned.zip', 'application/zip', zip),
@@ -166,27 +195,35 @@ describe('project ownership persistence', () => {
     expect(response.statusCode).toBe(200);
     const result = response.json<{ importId: string; projectId: string }>();
     await expect(repository.findById(result.importId)).resolves.toMatchObject({ ownerId: 'user-a' });
-
-    const access = new ProjectAccessService(repository);
-    await expect(access.assertImportOwner(result.importId, 'user-a')).resolves.toBeUndefined();
-    await expect(access.assertProjectOwner(result.projectId, 'user-b')).rejects.toMatchObject({
-      code: 'FORBIDDEN',
-      statusCode: 404,
-    });
+    await expect(
+      new ProjectAccessService(repository).assertProjectOwner(result.projectId, 'user-b'),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN', statusCode: 403 });
     await app.close();
   });
 });
 
 describe('production auth configuration', () => {
-  it('fails closed when authentication is disabled', () => {
+  it('preserves the AUTH_MODE=off production crash guard', () => {
     expect(() => loadEnv({ NODE_ENV: 'production', AUTH_MODE: 'off' })).toThrow(
       'AUTH_MODE: cannot be off in production',
     );
   });
 
-  it('requires Clerk issuer and JWKS settings in clerk mode', () => {
-    expect(() => loadEnv({ AUTH_MODE: 'clerk' })).toThrow(
-      'CLERK_JWKS_URL and CLERK_ISSUER are required',
+  it('requires AUTH_MODE=on in production', () => {
+    expect(() => loadEnv({ NODE_ENV: 'production', AUTH_MODE: 'dev' })).toThrow(
+      'AUTH_MODE: must be on in production',
     );
+  });
+
+  it('requires Supabase server settings in on mode', () => {
+    expect(() => loadEnv({ AUTH_MODE: 'on' })).toThrow(
+      'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required',
+    );
+    expect(() => loadEnv({
+      NODE_ENV: 'production',
+      AUTH_MODE: 'on',
+      SUPABASE_URL: 'https://example.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'server-only-key',
+    })).not.toThrow();
   });
 });

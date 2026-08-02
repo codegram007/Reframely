@@ -1,5 +1,5 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Rocket, ChevronRight, Sparkles } from 'lucide-react';
+import { Rocket, ChevronRight, Sparkles, LogOut } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { ThemeToggle } from '@/components/brand/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { DeployPanel } from '@/components/editor/deploy/deploy-panel';
 import { useProjectsStore } from '@/stores/projects-store';
 import { useDeployStore } from '@/stores/deploy-store';
 import { useAssistantStore } from '@/stores/assistant-store';
+import { useAuth } from '@/auth/auth-provider';
 
 /**
  * Global top bar. On the editor route it shows the project name,
@@ -25,6 +26,7 @@ export function TopBar() {
   const setDeployOpen = useDeployStore((s) => s.setPanelOpen);
   const assistantOpen = useAssistantStore((s) => s.open);
   const toggleAssistant = useAssistantStore((s) => s.toggleOpen);
+  const { user, signOut } = useAuth();
 
   return (
     <>
@@ -62,6 +64,14 @@ export function TopBar() {
             </>
           )}
           <ThemeToggle />
+          <IconButton
+            label={user?.email ? `Sign out ${user.email}` : 'Sign out'}
+            variant="ghost"
+            size="md"
+            onClick={() => void signOut()}
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+          </IconButton>
           {isEditor && (
             <>
               <div className="mx-1 h-5 w-px bg-border" />

@@ -1,5 +1,5 @@
 {
-  "name": "vibestudio-frontend",
+  "name": "reframely-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -15,6 +15,7 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@monaco-editor/react": "^4.7.0",
+    "@supabase/supabase-js": "^2.111.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",

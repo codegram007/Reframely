@@ -11,7 +11,7 @@ import { VersionService } from './services/versions/index.js';
 import { DeployService } from './services/deploy/index.js';
 import { AiAgentService, aiAgentMode } from './services/ai-agent/index.js';
 import { CleanupService } from './services/cleanup/index.js';
-import { JwtAuthService } from './services/auth/index.js';
+import { SupabaseAuthService } from './services/auth/index.js';
 import { ProjectAccessService } from './services/projects/index.js';
 import { PageSyncHub } from './services/sync/index.js';
 import { ProjectTreeService } from './services/trees/index.js';
@@ -56,7 +56,7 @@ async function main(): Promise<void> {
   const deployService = new DeployService({ objectStore, codegenService });
   const aiAgentService = new AiAgentService();
   const cleanupService = new CleanupService();
-  const authService = new JwtAuthService();
+  const authService = new SupabaseAuthService();
   const projectAccessService = new ProjectAccessService(repository);
   const pageSyncHub = new PageSyncHub();
   const projectTreeService = new ProjectTreeService(objectStore);
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
     await app.listen({ host: env.HOST, port: env.PORT });
     logger.info(
       { aiAgentMode: aiAgentMode(), deployBase: env.DEPLOY_BASE_URL },
-      'vibestudio backend ready',
+      'reframely backend ready',
     );
   } catch (err) {
     logger.fatal({ err }, 'failed to start server');

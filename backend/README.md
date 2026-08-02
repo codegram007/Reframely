@@ -1,6 +1,6 @@
-# Vibestudio Backend
+# Reframely Backend
 
-Node.js + TypeScript + Fastify backend with Clerk JWT authentication and local dev tokens.
+Node.js + TypeScript + Fastify backend with Supabase Auth and a local development bypass.
 
 ## Layout
 
@@ -34,7 +34,7 @@ src/
     deploy/           # codegen → publish snapshot + status/domain (B10)
     ai-agent/         # heuristic (or Anthropic) → TreePatch proposals (B12)
     cleanup/          # B13 "clean up this import" restructuring proposals
-    auth/             # B14 JWT (Clerk) + local HS256 dev tokens
+    auth/             # B14 Supabase token verification + fixed local dev user
     projects/         # B14 project/import ownership checks
     sync/             # B15 ephemeral page patch hub (last-write-wins)
 test/
@@ -196,22 +196,18 @@ editor Accept/Reject flow works end-to-end. Wire Anthropic Messages +
 
 ## Authentication (B14)
 
-All API routes except `GET /health` require a bearer token when auth is enabled.
-Project and import routes also verify the authenticated JWT subject against the
-project's persisted `owner_id`; inaccessible resources return 404 to avoid
-revealing another user's identifiers.
+All API routes except `GET /health` require authentication. In `AUTH_MODE=on`,
+the backend validates the bearer token with Supabase Auth and compares its user
+id with the project's persisted `owner_id`; ownership mismatches return 403.
 
-- Production: set `AUTH_MODE=clerk`, `CLERK_JWKS_URL`, and `CLERK_ISSUER`.
-- Local development: set `AUTH_MODE=dev`, then generate an eight-hour token:
+- Production: set `AUTH_MODE=on`, `SUPABASE_URL`, and the server-only
+  `SUPABASE_SERVICE_ROLE_KEY`.
+- Local development: `AUTH_MODE=dev` bypasses token verification and injects
+  the fixed `local-user` identity.
 
-```bash
-npm run auth:seed -- --user local-user --email local@example.com
-```
-
-Copy the printed `Authorization: Bearer ...` header into API requests. New
-imports created with that token are owned by `local-user`. `AUTH_MODE=off` is
-available for tests and local migration work, but startup rejects it when
-`NODE_ENV=production`.
+Production startup requires `AUTH_MODE=on`. The existing explicit
+`AUTH_MODE=off` production crash guard is retained, while `off` is no longer a
+valid runtime mode anywhere.
 
 ## Realtime page sync (B15)
 
@@ -236,8 +232,10 @@ Wire protocol (JSON text frames):
   `stale: true` — there is no OT/CRDT merge.
 - **Ephemeral:** rooms live only in process memory and drop when the last
   subscriber disconnects. Process restarts reset revisions to 0.
-- **Auth:** the B14 plugin protects the upgrade via `projectId` ownership
-  (send `Authorization: Bearer …` on the WebSocket handshake).
+- **Auth:** the B14 plugin protects the upgrade via `projectId` ownership.
+  Browser clients pass the Supabase token as the sync URL's `access_token`
+  query value because the browser WebSocket API cannot set request headers;
+  non-browser clients may send `Authorization: Bearer …`.
 
 ### Not real multiplayer (PRD non-goal)
 
@@ -263,8 +261,8 @@ npm run typecheck
 docker compose up -d postgres minio minio-init
 ```
 
-- Postgres: `localhost:5432` (vibestudio / vibestudio)
+- Postgres: `localhost:5432` (reframely / reframely)
 - MinIO S3 API: `http://localhost:9000`, console at `http://localhost:9001` (minioadmin / minioadmin)
-- Bucket `vibestudio-dev` is created automatically by the `minio-init` job.
+- Bucket `reframely-dev` is created automatically by the `minio-init` job.
 
 To run the API itself in Docker too: `docker compose up --build`.

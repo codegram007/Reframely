@@ -7,7 +7,7 @@ interface LogoProps {
 }
 
 /**
- * Vibestudio logo. The mark is a stylized layered-stack glyph (nodes
+ * Reframely logo. The mark is a stylized layered-stack glyph (nodes
  * nesting into nodes — the Section/Row/Column/Widget tree) in the brand
  * violet gradient.
  */
@@ -40,7 +40,7 @@ export function Logo({ className, markOnly = false }: LogoProps) {
       </span>
       {!markOnly && (
         <span className="text-lg font-semibold tracking-tight text-foreground">
-          Vibestudio
+          Reframely
         </span>
       )}
     </span>

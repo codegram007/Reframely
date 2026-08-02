@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'vibestudio-theme';
+const STORAGE_KEY = 'reframely-theme';
 
 function readStored(): Theme | null {
   try {

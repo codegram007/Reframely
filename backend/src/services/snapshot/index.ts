@@ -35,7 +35,7 @@ export { SnapshotError, type SnapshotErrorCode } from './errors.js';
 export * from './types.js';
 
 /** Origin used when serving stored project files via interception. */
-const VIRTUAL_ORIGIN = 'http://project.vibestudio.local';
+const VIRTUAL_ORIGIN = 'http://project.reframely.local';
 
 /** Shape returned by the in-page extraction script. */
 interface ExtractResult {

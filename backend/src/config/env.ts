@@ -41,14 +41,14 @@ const envSchema = z.object({
   DATABASE_URL: z
     .string()
     .url()
-    .default('postgres://vibestudio:vibestudio@localhost:5432/vibestudio'),
+    .default('postgres://reframely:reframely@localhost:5432/reframely'),
 
   /* S3-compatible object storage (MinIO in development) */
   S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
   S3_REGION: z.string().default('us-east-1'),
   S3_ACCESS_KEY: z.string().default('minioadmin'),
   S3_SECRET_KEY: z.string().default('minioadmin'),
-  S3_BUCKET: z.string().default('vibestudio-dev'),
+  S3_BUCKET: z.string().default('reframely-dev'),
 
   /* Import service limits */
   IMPORT_MAX_TOTAL_BYTES: z.coerce
@@ -59,20 +59,15 @@ const envSchema = z.object({
   IMPORT_MAX_FILES: z.coerce.number().int().positive().default(2000),
 
   /* Deploy (B10) — public base used to mint preview URLs */
-  DEPLOY_BASE_URL: z.string().url().default('https://preview.vibestudio.app'),
+  DEPLOY_BASE_URL: z.string().url().default('https://preview.reframely.app'),
 
   /* AI agent (B12) — optional; without a key the heuristic proposer runs */
   ANTHROPIC_API_KEY: z.string().optional(),
 
-  /* Auth (B14): Clerk in production, local HS256 tokens in development. */
-  AUTH_MODE: z.enum(['off', 'dev', 'clerk']).default('off'),
-  AUTH_DEV_SECRET: z
-    .string()
-    .min(32)
-    .default('vibestudio-local-dev-secret-change-me'),
-  CLERK_JWKS_URL: z.string().url().optional(),
-  CLERK_ISSUER: z.string().url().optional(),
-  CLERK_AUDIENCE: z.string().optional(),
+  /* Auth (B14): Supabase in production, fixed local user in development. */
+  AUTH_MODE: z.enum(['dev', 'on']).default('dev'),
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 
   /**
    * Local storage without Docker:
@@ -92,6 +87,10 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
+  // Preserve the original production crash guard and its actionable error.
+  if (source.NODE_ENV === 'production' && source.AUTH_MODE === 'off') {
+    throw new Error('Invalid environment configuration:\n  AUTH_MODE: cannot be off in production');
+  }
   const result = envSchema.safeParse(source);
   if (!result.success) {
     const issues = result.error.issues
@@ -100,12 +99,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error(`Invalid environment configuration:\n${issues}`);
   }
   const value = result.data;
-  if (value.NODE_ENV === 'production' && value.AUTH_MODE === 'off') {
-    throw new Error('Invalid environment configuration:\n  AUTH_MODE: cannot be off in production');
+  if (value.NODE_ENV === 'production' && value.AUTH_MODE !== 'on') {
+    throw new Error('Invalid environment configuration:\n  AUTH_MODE: must be on in production');
   }
-  if (value.AUTH_MODE === 'clerk' && (!value.CLERK_JWKS_URL || !value.CLERK_ISSUER)) {
+  if (value.AUTH_MODE === 'on' && (!value.SUPABASE_URL || !value.SUPABASE_SERVICE_ROLE_KEY)) {
     throw new Error(
-      'Invalid environment configuration:\n  CLERK_JWKS_URL and CLERK_ISSUER are required when AUTH_MODE=clerk',
+      'Invalid environment configuration:\n  SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required when AUTH_MODE=on',
     );
   }
   return value;

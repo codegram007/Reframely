@@ -43,9 +43,6 @@ if (!projectId) {
   process.exit(1);
 }
 
-const tokRes = await req('GET', '/auth/dev-token?user=local-user');
-const { token } = JSON.parse(tokRes.body.toString());
-
 const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
 const boundary = '----assetboundary';
 const payload = Buffer.concat([
@@ -57,15 +54,14 @@ const payload = Buffer.concat([
 ]);
 
 const up = await req('POST', `/projects/${projectId}/assets`, payload, {
-  authorization: `Bearer ${token}`,
   'content-type': `multipart/form-data; boundary=${boundary}`,
 });
 console.log('upload', up.status, up.body.toString().slice(0, 400));
 if (up.status !== 200) process.exit(1);
 
 const json = JSON.parse(up.body.toString());
-const path = json.url.replace(/^\/api/, '');
-const get = await req('GET', path);
-console.log('get-public', get.status, get.headers['content-type'], get.body.length);
+const fileName = json.key.split('/').at(-1);
+const get = await req('GET', `/projects/${projectId}/assets/file/${fileName}`);
+console.log('get-dev', get.status, get.headers['content-type'], get.body.length);
 if (get.status !== 200 || get.body.length < 4) process.exit(1);
 console.log('asset e2e OK', json.url);

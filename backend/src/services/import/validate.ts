@@ -88,7 +88,7 @@ export function validateProject(project: NormalizedProject): void {
   if (!hasHtml) {
     throw new ImportError(
       'NOT_A_FRONTEND_PROJECT',
-      'No HTML file was found in the project. Vibestudio imports static frontend projects — make sure the upload includes an index.html (or other .html) file.',
+      'No HTML file was found in the project. Reframely imports static frontend projects — make sure the upload includes an index.html (or other .html) file.',
     );
   }
 }

@@ -15,5 +15,5 @@ export const logger = pino({
         },
       }
     : {}),
-  base: { service: 'vibestudio-backend' },
+  base: { service: 'reframely-backend' },
 });

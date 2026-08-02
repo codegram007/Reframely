@@ -15,7 +15,6 @@ import { assistantRoutes } from './routes/assistant.js';
 import { cleanupRoutes } from './routes/cleanup.js';
 import { syncRoutes } from './routes/sync.js';
 import { treeRoutes } from './routes/trees.js';
-import { authDevRoutes } from './routes/auth-dev.js';
 import type { ImportService } from './services/import/index.js';
 import type { SnapshotService } from './services/snapshot/index.js';
 import type { ClassifierService } from './services/classifier/index.js';
@@ -72,9 +71,6 @@ export function buildApp(deps: AppDeps = {}) {
   }
 
   app.register(healthRoutes);
-  if (deps.authService) {
-    app.register(authDevRoutes(deps.authService));
-  }
   if (deps.importService) {
     app.register(importRoutes(deps.importService));
   }

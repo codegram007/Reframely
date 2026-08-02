@@ -1,4 +1,4 @@
-# Vibestudio AI Assistant — Tool-Calling Design
+# Reframely AI Assistant — Tool-Calling Design
 
 ## Note on the widget tree schema
 Your message said "[paste widget-tree-schema.ts contents or summary]" but the actual

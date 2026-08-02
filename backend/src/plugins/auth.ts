@@ -17,16 +17,15 @@ export interface AuthPluginOptions {
 
 function publicRoute(request: FastifyRequest): boolean {
   const path = request.url.split('?')[0] ?? request.url;
-  if (path === '/health' || path === '/auth/dev-token') return true;
-  // <img src> cannot send Authorization. Asset file names are opaque ids;
-  // upload/list remain protected. Tighten later with signed cookies/CDN.
-  if (
-    request.method === 'GET' &&
-    /^\/projects\/[^/]+\/assets\/file\/[^/]+$/.test(path)
-  ) {
-    return true;
-  }
-  return false;
+  return path === '/health';
+}
+
+function authorizationForRequest(request: FastifyRequest): string | undefined {
+  if (request.headers.authorization) return request.headers.authorization;
+  const path = request.url.split('?')[0] ?? request.url;
+  if (!/^\/projects\/[^/]+\/pages\/[^/]+\/sync$/.test(path)) return undefined;
+  const token = new URL(request.url, 'http://localhost').searchParams.get('access_token');
+  return token ? `Bearer ${token}` : undefined;
 }
 
 function errorResponse(error: AuthError) {
@@ -38,7 +37,7 @@ const authPluginImpl: FastifyPluginAsync<AuthPluginOptions> = async (app, option
     if (publicRoute(request)) return;
     try {
       request.user = await options.authService.verifyAuthorizationHeader(
-        request.headers.authorization,
+        authorizationForRequest(request),
       );
     } catch (error) {
       if (!(error instanceof AuthError)) throw error;
@@ -47,7 +46,7 @@ const authPluginImpl: FastifyPluginAsync<AuthPluginOptions> = async (app, option
   });
 
   app.addHook('preHandler', async (request, reply) => {
-    if (publicRoute(request) || options.authService.mode === 'off') return;
+    if (publicRoute(request)) return;
     const user = request.user;
     if (!user) {
       return reply.code(401).send(errorResponse(
@@ -71,5 +70,4 @@ const authPluginImpl: FastifyPluginAsync<AuthPluginOptions> = async (app, option
   });
 };
 
-export const authPlugin = fp(authPluginImpl, { name: 'vibestudio-auth' });
-
+export const authPlugin = fp(authPluginImpl, { name: 'reframely-auth' });

@@ -51,7 +51,7 @@ const DOMAIN_RE =
 
 function mockUrl(projectId: string): string {
   const slug = projectId.replace(/[^a-z0-9-]/gi, '-').toLowerCase().slice(0, 24) || 'site';
-  return `https://${slug}.preview.vibestudio.app`;
+  return `https://${slug}.preview.reframely.app`;
 }
 
 export function isValidDomain(hostname: string): boolean {
@@ -167,7 +167,7 @@ export const useDeployStore = create<DeployState>((set, get) => ({
         set({
           domain: hostname,
           domainStatus: 'pending',
-          domainInstructions: `Add a CNAME record pointing ${hostname} to cname.vibestudio.app, then re-check later.`,
+          domainInstructions: `Add a CNAME record pointing ${hostname} to cname.reframely.app, then re-check later.`,
           usedMock: true,
         });
         return;

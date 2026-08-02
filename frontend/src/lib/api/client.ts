@@ -15,7 +15,7 @@ import type {
   TreeVersionRecord,
 } from './types';
 import type { WidgetTree } from '@/lib/schema';
-import { authHeaders, ensureAuthReady } from './auth';
+import { authHeaders, ensureAuthReady, handleUnauthorized } from './auth';
 
 const BASE = '/api';
 
@@ -65,13 +65,15 @@ async function request(
   if (!init.skipAuthBootstrap) await ensureAuthReady();
   const { skipAuthBootstrap: _s, headers, ...rest } = init;
   try {
-    return await fetch(`${BASE}${path}`, {
+    const res = await fetch(`${BASE}${path}`, {
       ...rest,
       headers: {
-        ...authHeaders(),
+        ...(await authHeaders()),
         ...(headers as Record<string, string> | undefined),
       },
     });
+    if (res.status === 401) await handleUnauthorized();
+    return res;
   } catch {
     throw new NetworkError();
   }
@@ -112,13 +114,14 @@ function uploadZip(file: File, onProgress?: (fraction: number) => void): Promise
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `${BASE}/imports/zip`);
-      const headers = authHeaders();
+      const headers = await authHeaders();
       for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v);
 
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total);
       });
       xhr.addEventListener('load', () => {
+        if (xhr.status === 401) void handleUnauthorized();
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             resolve(JSON.parse(xhr.responseText) as ImportResult);
@@ -229,14 +232,16 @@ export const api = {
     form.append('file', file, file.name);
     let res: Response;
     try {
+      const headers = await authHeaders();
       res = await fetch(`${BASE}/projects/${encodeURIComponent(projectId)}/assets`, {
         method: 'POST',
-        headers: { ...authHeaders() },
+        headers,
         body: form,
       });
     } catch {
       throw new NetworkError();
     }
+    if (res.status === 401) await handleUnauthorized();
     if (!res.ok) throw await parseError(res);
     return (await res.json()) as AssetUploadResult;
   },

@@ -66,7 +66,7 @@ export function ImportModal({ open, onClose }: ImportModalProps) {
       title={phase === 'error' ? 'Import failed' : running || isReady ? 'Importing' : 'Import a site'}
       description={
         phase === 'idle'
-          ? 'Bring an existing front-end project into Vibestudio to edit it visually.'
+          ? 'Bring an existing front-end project into Reframely to edit it visually.'
           : undefined
       }
     >

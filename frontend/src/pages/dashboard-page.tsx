@@ -75,10 +75,10 @@ function EmptyState({ onImport }: { onImport: () => void }) {
           <Logo markOnly />
         </div>
         <h2 className="text-xl font-semibold tracking-tight text-foreground">
-          Bring your first site into Vibestudio
+          Bring your first site into Reframely
         </h2>
         <p className="mt-2 max-w-md text-sm text-foreground-muted">
-          Vibestudio imports an existing website and maps it into editable
+          Reframely imports an existing website and maps it into editable
           sections, rows, and widgets — no rebuild required.
         </p>
 

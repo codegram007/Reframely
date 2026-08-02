@@ -1,8 +1,8 @@
-# Vibestudio AI Assistant Tool Schema — Delivery Summary
+# Reframely AI Assistant Tool Schema — Delivery Summary
 
 ## What was delivered
 
-A complete tool-calling schema for the in-product AI assistant (Claude via Anthropic API) to propose edits to the Vibestudio widget tree.
+A complete tool-calling schema for the in-product AI assistant (Claude via Anthropic API) to propose edits to the Reframely widget tree.
 
 ## Files created
 

@@ -1,5 +1,5 @@
 /**
- * Vibestudio Widget Tree Schema — frontend mirror.
+ * Reframely Widget Tree Schema — frontend mirror.
  *
  * Canonical source: `widget-tree-schema.ts` at the repository root
  * (version 1.0). The frontend can't import across the repo root, so the

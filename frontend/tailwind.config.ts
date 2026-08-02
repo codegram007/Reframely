@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Vibestudio theme. All palette values are driven by CSS custom
+ * Reframely theme. All palette values are driven by CSS custom
  * properties defined in src/styles/theme.css so light/dark is a single
  * class swap on <html>. Tailwind consumes them via hsl(var(--token)).
  */

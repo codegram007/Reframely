@@ -13,16 +13,16 @@ and any Deploy Preview/Branch Deploy context that should support login:
 ```text
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<Supabase publishable/anon key>
+VITE_BACKEND_URL=https://reframely-backend.onrender.com
 ```
 
 The anon key is designed to be public and is embedded by Vite. Never add the
 service-role key to Netlify or any `VITE_*` variable.
 
-The frontend currently sends HTTP API requests to same-origin `/api`. Add a
-Netlify `/api/*` reverse-proxy redirect to the deployed Fastify backend before
-the SPA fallback once the backend URL is known. The browser WebSocket client
-also needs the backend's public `wss://` endpoint; Netlify should not host the
-Fastify WebSocket server.
+The repository `netlify.toml` proxies same-origin `/api/*` requests to the
+deployed Fastify backend. Set `VITE_BACKEND_URL` in Netlify to the backend
+origin so the browser WebSocket client connects directly to its `wss://`
+endpoint; Netlify should not host the Fastify WebSocket server.
 
 ## Fastify backend host
 

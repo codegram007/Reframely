@@ -16,11 +16,12 @@ export async function openProjectSyncSocket(
     throw new Error('An authenticated Supabase session is required.');
   }
 
+  const backendOrigin = import.meta.env.VITE_BACKEND_URL?.trim() || window.location.origin;
   const url = new URL(
     `/api/projects/${encodeURIComponent(projectId)}/pages/${encodeURIComponent(pageId)}/sync`,
-    window.location.href,
+    backendOrigin,
   );
-  url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
   url.searchParams.set('access_token', token);
   if (clientId) url.searchParams.set('clientId', clientId);
   return new WebSocket(url);

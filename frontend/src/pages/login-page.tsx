@@ -29,7 +29,13 @@ export function LoginPage() {
     setMessage(null);
     try {
       if (mode === 'signup') {
-        const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/login`,
+          },
+        });
         if (signUpError) throw signUpError;
         if (!data.session) setMessage('Check your email to confirm your account, then sign in.');
       } else {

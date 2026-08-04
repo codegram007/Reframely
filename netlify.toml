@@ -10,7 +10,7 @@
 # before the SPA fallback so `/api/*` is never served as index.html.
 [[redirects]]
   from = "/api/*"
-  to = "https://reframely-backend.onrender.com/api/:splat"
+  to = "https://reframely-backend.onrender.com/:splat"
   status = 200
   force = true
 

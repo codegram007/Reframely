@@ -18,7 +18,7 @@ export async function openProjectSyncSocket(
 
   const backendOrigin = import.meta.env.VITE_BACKEND_URL?.trim() || window.location.origin;
   const url = new URL(
-    `/api/projects/${encodeURIComponent(projectId)}/pages/${encodeURIComponent(pageId)}/sync`,
+    `/projects/${encodeURIComponent(projectId)}/pages/${encodeURIComponent(pageId)}/sync`,
     backendOrigin,
   );
   url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';

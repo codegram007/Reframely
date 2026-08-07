@@ -22,6 +22,22 @@ describe('smoke', () => {
     expect(typeof body.uptimeSeconds).toBe('number');
   });
 
+  it('answers browser CORS preflight for direct API requests', async () => {
+    const res = await app.inject({
+      method: 'OPTIONS',
+      url: '/imports/url',
+      headers: {
+        origin: 'https://reframely.netlify.app',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'authorization,content-type',
+      },
+    });
+
+    expect(res.statusCode).toBe(204);
+    expect(res.headers['access-control-allow-origin']).toBe('*');
+    expect(res.headers['access-control-allow-headers']).toContain('authorization');
+  });
+
   it('env validation rejects a malformed PORT', () => {
     expect(() => loadEnv({ PORT: 'not-a-number' } as NodeJS.ProcessEnv)).toThrow(
       /Invalid environment configuration/,

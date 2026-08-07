@@ -37,6 +37,9 @@ const envSchema = z.object({
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
 
+  /* Browser origins allowed to call this API directly (comma-separated). */
+  CORS_ORIGINS: z.string().default('*'),
+
   /* Postgres */
   DATABASE_URL: z
     .string()

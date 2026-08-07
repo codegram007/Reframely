@@ -1,5 +1,7 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
+import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { authPlugin } from './plugins/auth.js';
 import { healthRoutes } from './routes/health.js';
@@ -61,6 +63,15 @@ export function buildApp(deps: AppDeps = {}) {
   }
   const app = Fastify({
     loggerInstance: logger.child({ component: 'http' }),
+  });
+
+  const allowedOrigins = env.CORS_ORIGINS.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  app.register(cors, {
+    origin: allowedOrigins.includes('*') ? '*' : allowedOrigins,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['authorization', 'content-type'],
   });
 
   if (deps.authService && deps.projectAccessService) {

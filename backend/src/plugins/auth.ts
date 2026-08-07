@@ -16,6 +16,9 @@ export interface AuthPluginOptions {
 }
 
 function publicRoute(request: FastifyRequest): boolean {
+  // CORS preflight carries no bearer token. The actual request is still
+  // authenticated by the hooks below.
+  if (request.method === 'OPTIONS') return true;
   const path = request.url.split('?')[0] ?? request.url;
   return path === '/health';
 }

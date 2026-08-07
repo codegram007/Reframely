@@ -20,9 +20,10 @@ The anon key is designed to be public and is embedded by Vite. Never add the
 service-role key to Netlify or any `VITE_*` variable.
 
 The repository `netlify.toml` proxies same-origin `/api/*` requests to the
-deployed Fastify backend. Set `VITE_BACKEND_URL` in Netlify to the backend
-origin so the browser WebSocket client connects directly to its `wss://`
-endpoint; Netlify should not host the Fastify WebSocket server.
+deployed Fastify backend as a fallback. Set `VITE_BACKEND_URL` in Netlify to
+the backend origin so browser API and WebSocket traffic connects directly to
+Render. Import and snapshot requests can exceed Netlify's proxy timeout and
+must not depend on that proxy.
 
 ## Fastify backend host
 
@@ -32,7 +33,12 @@ Set in the backend provider's Production environment:
 AUTH_MODE=on
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<Supabase service-role secret>
+CORS_ORIGINS=https://<your-netlify-site>.netlify.app,https://<your-custom-domain>
 ```
+
+`CORS_ORIGINS` is a comma-separated list. Include every frontend deployment
+that should call the backend directly. Deploy previews require their own
+origins (or a deliberately broader CORS policy).
 
 `SUPABASE_SERVICE_ROLE_KEY` is server-only. Private development environments
 may use `AUTH_MODE=dev`, which injects the fixed `local-user`; production

@@ -17,7 +17,14 @@ import type {
 import type { WidgetTree } from '@/lib/schema';
 import { authHeaders, ensureAuthReady, handleUnauthorized } from './auth';
 
-const BASE = '/api';
+/**
+ * Production requests go straight to the long-running backend. Import and
+ * snapshot calls can legitimately take longer than Netlify's reverse-proxy
+ * timeout, so routing them through same-origin `/api` causes spurious 504s.
+ * Keep `/api` as the local/dev fallback where the Vite proxy is convenient.
+ */
+const configuredBackend = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/$/, '');
+const BASE = configuredBackend || '/api';
 
 /**
  * A backend error with a stable `code` (e.g. NOT_A_FRONTEND_PROJECT) and

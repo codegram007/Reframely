@@ -507,7 +507,7 @@ function HowItWorks() {
       image: STOCK.laptop,
       visual: (
         <div className="flex h-full flex-col justify-center gap-2 p-4">
-          {['ai-export.zip', 'github.com/you/landing', 'mysite.vercel.app'].map((t) => (
+          {['ai-export.zip', 'github.com/you/landing', 'mysite.netlify.app'].map((t) => (
             <div
               key={t}
               className="landing-glass flex items-center gap-2 rounded-md px-3 py-2 text-xs text-foreground-muted"

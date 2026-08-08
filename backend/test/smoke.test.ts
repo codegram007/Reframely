@@ -27,14 +27,14 @@ describe('smoke', () => {
       method: 'OPTIONS',
       url: '/imports/url',
       headers: {
-        origin: 'https://reframely.netlify.app',
+        origin: 'https://reframelyai.netlify.app',
         'access-control-request-method': 'POST',
         'access-control-request-headers': 'authorization,content-type',
       },
     });
 
     expect(res.statusCode).toBe(204);
-    expect(res.headers['access-control-allow-origin']).toBe('*');
+    expect(res.headers['access-control-allow-origin']).toBe('https://reframelyai.netlify.app');
     expect(res.headers['access-control-allow-headers']).toContain('authorization');
   });
 

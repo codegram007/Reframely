@@ -33,7 +33,7 @@ Set in the backend provider's Production environment:
 AUTH_MODE=on
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<Supabase service-role secret>
-CORS_ORIGINS=https://<your-netlify-site>.netlify.app,https://<your-custom-domain>
+CORS_ORIGINS=https://reframelyai.netlify.app,https://<your-custom-domain>
 ```
 
 `CORS_ORIGINS` is a comma-separated list. Include every frontend deployment

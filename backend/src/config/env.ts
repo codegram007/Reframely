@@ -38,7 +38,7 @@ const envSchema = z.object({
     .default('info'),
 
   /* Browser origins allowed to call this API directly (comma-separated). */
-  CORS_ORIGINS: z.string().default('*'),
+  CORS_ORIGINS: z.string().default('https://reframelyai.netlify.app'),
 
   /* Postgres */
   DATABASE_URL: z

@@ -1,5 +1,6 @@
-import { Link, useLocation, useParams } from 'react-router-dom';
-import { Rocket, ChevronRight, Sparkles, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Rocket, ChevronRight, Sparkles, LogOut, Save, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { ThemeToggle } from '@/components/brand/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,9 @@ import { useProjectsStore } from '@/stores/projects-store';
 import { useDeployStore } from '@/stores/deploy-store';
 import { useAssistantStore } from '@/stores/assistant-store';
 import { useAuth } from '@/auth/auth-provider';
+import { useTreeStore } from '@/stores/tree-store';
+import { useEditorUiStore } from '@/stores/editor-ui-store';
+import { flushVersionAutosave } from '@/lib/version-persist';
 
 /**
  * Global top bar. On the editor route it shows the project name,
@@ -17,6 +21,7 @@ import { useAuth } from '@/auth/auth-provider';
  */
 export function TopBar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const params = useParams();
   const isEditor = location.pathname.startsWith('/editor/');
   const projectId = params.projectId ?? 'demo';
@@ -25,8 +30,34 @@ export function TopBar() {
   );
   const setDeployOpen = useDeployStore((s) => s.setPanelOpen);
   const assistantOpen = useAssistantStore((s) => s.open);
-  const toggleAssistant = useAssistantStore((s) => s.toggleOpen);
+  const setAssistantOpen = useAssistantStore((s) => s.setOpen);
+  const openLeftPanel = useEditorUiStore((s) => s.openLeftPanel);
+  const tree = useTreeStore((s) => s.tree);
+  const markProjectSaved = useProjectsStore((s) => s.markProjectSaved);
+  const upsertProject = useProjectsStore((s) => s.upsertProject);
   const { user, signOut } = useAuth();
+  const [saving, setSaving] = useState(false);
+
+  const saveAndExit = async () => {
+    if (!params.projectId || saving) return;
+    setSaving(true);
+    const result = await flushVersionAutosave(params.projectId, tree);
+    setSaving(false);
+    if (!result.ok) return;
+    if (project) {
+      markProjectSaved(params.projectId);
+    } else {
+      upsertProject({
+        id: params.projectId,
+        name: tree.root.title || 'Untitled project',
+        origin: 'Saved in Reframely',
+        status: 'ready',
+        pageCount: 1,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+    navigate('/app');
+  };
 
   return (
     <>
@@ -51,12 +82,20 @@ export function TopBar() {
             <>
               <UndoRedoControls />
               <div className="mx-1 h-5 w-px bg-border" />
+              <Button variant="secondary" size="sm" disabled={saving} onClick={() => void saveAndExit()}>
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? 'Saving...' : 'Save & Exit'}
+              </Button>
               <IconButton
                 label="AI Assistant"
                 variant="ghost"
                 size="md"
                 active={assistantOpen}
-                onClick={toggleAssistant}
+                onClick={() => {
+                  const next = !assistantOpen;
+                  setAssistantOpen(next);
+                  if (next) openLeftPanel();
+                }}
               >
                 <Sparkles className="h-[18px] w-[18px]" />
               </IconButton>

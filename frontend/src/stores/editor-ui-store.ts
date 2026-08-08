@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type Breakpoint = 'desktop' | 'tablet' | 'mobile';
-export type LeftPanelTab = 'layers' | 'insert';
+export type LeftPanelTab = 'layers' | 'insert' | 'inspector';
 
 /** Rendered canvas width per breakpoint (matches codegen media queries). */
 export const BREAKPOINT_WIDTH: Record<Breakpoint, number> = {

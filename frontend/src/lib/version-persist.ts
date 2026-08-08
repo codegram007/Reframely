@@ -102,6 +102,11 @@ export function listLocalVersions(projectId: string): Omit<LocalTreeVersion, 'tr
   return readLocal(projectId).map(({ tree: _t, ...meta }) => meta);
 }
 
+/** Latest browser-local checkpoint, used when temporary backend storage reset. */
+export function getLatestLocalVersion(projectId: string): LocalTreeVersion | undefined {
+  return readLocal(projectId)[0];
+}
+
 /** Debounced autosave scheduler — one pending timer per project. */
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
 const lastSavedJson = new Map<string, string>();

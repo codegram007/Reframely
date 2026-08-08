@@ -6,6 +6,7 @@ import {
   LayoutTemplate,
   Code2,
   PanelLeft,
+  Maximize2,
   type LucideIcon,
 } from 'lucide-react';
 import { IconButton } from '@/components/ui/icon-button';
@@ -17,6 +18,8 @@ import {
   type Breakpoint,
 } from '@/stores/editor-ui-store';
 import { useCodeViewStore } from '@/stores/code-view-store';
+import { useTreeStore } from '@/stores/tree-store';
+import { generatePage } from '@/lib/codegen';
 
 const options: { value: Breakpoint; icon: LucideIcon; label: string }[] = [
   { value: 'desktop', icon: Monitor, label: 'Desktop' },
@@ -37,6 +40,19 @@ export function CanvasToolbar() {
 
   const codeOpen = useCodeViewStore((s) => s.open);
   const setCodeOpen = useCodeViewStore((s) => s.setOpen);
+  const tree = useTreeStore((s) => s.tree);
+
+  const openPreview = () => {
+    const { html } = generatePage(tree);
+    const previewUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    const preview = window.open(previewUrl, '_blank');
+    if (!preview) {
+      URL.revokeObjectURL(previewUrl);
+      return;
+    }
+    preview.opener = null;
+    window.setTimeout(() => URL.revokeObjectURL(previewUrl), 60_000);
+  };
 
   return (
     <div className="flex h-11 shrink-0 items-center justify-between border-b border-border bg-surface px-3">
@@ -80,11 +96,18 @@ export function CanvasToolbar() {
         )}
       </div>
 
-      <div className="flex w-44 items-center justify-end gap-2">
+      <div className="flex items-center justify-end gap-2">
         {!codeOpen && (
           <span className="text-xs tabular-nums text-foreground-subtle">
             {BREAKPOINT_WIDTH[breakpoint]}px
           </span>
+        )}
+
+        {!codeOpen && (
+          <Button variant="secondary" size="sm" onClick={openPreview}>
+            <Maximize2 className="h-3.5 w-3.5" />
+            Preview
+          </Button>
         )}
 
         <div

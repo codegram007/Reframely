@@ -3,6 +3,7 @@ import { LayoutGrid, PanelsTopLeft, Sparkles, Settings, type LucideIcon } from '
 import { cn } from '@/lib/utils';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useAssistantStore } from '@/stores/assistant-store';
+import { useEditorUiStore } from '@/stores/editor-ui-store';
 
 interface RailItem {
   to: string;
@@ -51,6 +52,7 @@ export function IconRail() {
   const assistantOpen = useAssistantStore((s) => s.open);
   const toggleAssistant = useAssistantStore((s) => s.toggleOpen);
   const setAssistantOpen = useAssistantStore((s) => s.setOpen);
+  const openLeftPanel = useEditorUiStore((s) => s.openLeftPanel);
   const onEditor = location.pathname.startsWith('/editor/');
 
   return (
@@ -66,7 +68,9 @@ export function IconRail() {
             type="button"
             onClick={() => {
               if (onEditor) {
+                const next = !assistantOpen;
                 toggleAssistant();
+                if (next) openLeftPanel();
               } else {
                 setAssistantOpen(true);
                 navigate('/editor/demo');

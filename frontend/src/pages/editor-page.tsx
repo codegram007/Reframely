@@ -4,7 +4,6 @@ import { CanvasToolbar } from '@/components/editor/canvas-toolbar';
 import { Canvas } from '@/components/editor/canvas';
 import { CodeView } from '@/components/editor/code/code-view';
 import { LeftPanel, LeftPanelCollapsedRail } from '@/components/editor/left-panel';
-import { RightDock } from '@/components/editor/right-dock';
 import { SiteStylesPanel } from '@/components/editor/site-styles-panel';
 import { EditorLoading } from '@/components/editor/editor-loading';
 import { useImportStore } from '@/stores/import-store';
@@ -15,6 +14,7 @@ import { useEditorHistoryShortcuts } from '@/hooks/use-editor-history-shortcuts'
 import { useVersionAutosave } from '@/hooks/use-version-autosave';
 import { api } from '@/lib/api/client';
 import type { WidgetTree } from '@/lib/schema';
+import { getLatestLocalVersion } from '@/lib/version-persist';
 
 /**
  * Editor page shell — three-pane builder layout:
@@ -75,6 +75,12 @@ export function EditorPage() {
           /* no remote versions — fall through */
         }
 
+        const local = getLatestLocalVersion(projectId);
+        if (local?.tree?.root && !cancelled) {
+          useTreeStore.getState().setTree(local.tree);
+          return;
+        }
+
         try {
           const trees = await api.getProjectTrees(projectId);
           if (trees.primary?.tree?.root && !cancelled) {
@@ -100,8 +106,8 @@ export function EditorPage() {
     <div className="flex h-full min-h-0">
       {/* Left — full Layers/Insert dock, or slim reopen strip when collapsed */}
       {leftPanelOpen ? (
-        <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-surface">
-          <LeftPanel />
+        <aside className="flex w-80 shrink-0 flex-col border-r border-border bg-surface">
+          <LeftPanel projectId={projectId ?? 'demo'} breakpoint={breakpoint} />
         </aside>
       ) : (
         <LeftPanelCollapsedRail />
@@ -116,7 +122,6 @@ export function EditorPage() {
       </section>
 
       {/* Right — single dock: Inspector XOR AI */}
-      <RightDock projectId={projectId ?? 'demo'} breakpoint={breakpoint} />
 
       {/* Global design tokens — a separate modal surface (F12) */}
       <SiteStylesPanel />

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { api, ApiError, NetworkError } from '@/lib/api/client';
 import type { ClassifyImportResult, ImportResult } from '@/lib/api/types';
 import { useTreeStore } from '@/stores/tree-store';
+import { useProjectsStore } from '@/stores/projects-store';
 import type { WidgetTree } from '@/lib/schema';
 
 /**
@@ -89,7 +90,7 @@ function nameFrom(kind: ImportKind, source: string): string {
 
 export const useImportStore = create<ImportState>((set, get) => {
   /** Runs snapshot + classify after an import lands, advancing phases. */
-  async function runPipeline(imported: ImportResult): Promise<void> {
+  async function runPipeline(imported: ImportResult, origin: string): Promise<void> {
     set({ phase: 'snapshotting', projectId: imported.projectId });
     await api.snapshot(imported.importId);
 
@@ -103,7 +104,16 @@ export const useImportStore = create<ImportState>((set, get) => {
       useTreeStore.getState().setTree(tree);
     }
 
-    set({ phase: 'ready', summary: summarize(classified) });
+    const nextSummary = summarize(classified);
+    useProjectsStore.getState().upsertProject({
+      id: imported.projectId,
+      name: get().projectName ?? nameFrom(imported.sourceType === 'live-url' ? 'url' : imported.sourceType, origin),
+      origin,
+      status: 'ready',
+      pageCount: nextSummary.pageCount,
+      updatedAt: new Date().toISOString(),
+    });
+    set({ phase: 'ready', summary: nextSummary });
   }
 
   function fail(err: unknown): void {
@@ -133,7 +143,7 @@ export const useImportStore = create<ImportState>((set, get) => {
       try {
         const imported = await api.importZip(file, (f) => set({ uploadProgress: f }));
         set({ phase: 'importing' });
-        await runPipeline(imported);
+        await runPipeline(imported, file.name);
       } catch (err) {
         fail(err);
       }
@@ -143,7 +153,7 @@ export const useImportStore = create<ImportState>((set, get) => {
       set({ phase: 'importing', error: null, summary: null, projectName: nameFrom('github', url) });
       try {
         const imported = await api.importGitHub(url);
-        await runPipeline(imported);
+        await runPipeline(imported, url);
       } catch (err) {
         fail(err);
       }
@@ -153,7 +163,7 @@ export const useImportStore = create<ImportState>((set, get) => {
       set({ phase: 'importing', error: null, summary: null, projectName: nameFrom('url', url) });
       try {
         const imported = await api.importUrl(url);
-        await runPipeline(imported);
+        await runPipeline(imported, url);
       } catch (err) {
         fail(err);
       }

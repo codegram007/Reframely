@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Github, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,25 @@ export function LoginPage() {
     const from = (location.state as { from?: string } | null)?.from;
     return <Navigate to={from && from !== '/login' ? from : '/app'} replace />;
   }
+
+  const handleGithubSignIn = async () => {
+    setSubmitting(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/app`,
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'GitHub authentication failed.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -60,7 +79,28 @@ export function LoginPage() {
           {mode === 'login' ? 'Sign in to open your projects.' : 'Start editing your first imported site.'}
         </p>
 
-        <form className="mt-6 space-y-4" onSubmit={(event) => void submit(event)}>
+        {/* GitHub OAuth Provider Button */}
+        <Button
+          type="button"
+          variant="secondary"
+          className="mt-6 w-full flex items-center justify-center gap-2 border-border-strong hover:bg-surface-sunken"
+          disabled={submitting}
+          onClick={() => void handleGithubSignIn()}
+        >
+          <Github className="h-4 w-4" />
+          Continue with GitHub
+        </Button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-surface px-2 text-foreground-muted">Or continue with email</span>
+          </div>
+        </div>
+
+        <form className="space-y-4" onSubmit={(event) => void submit(event)}>
           <label className="block space-y-1.5 text-sm">
             <span>Email</span>
             <Input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -76,6 +116,35 @@ export function LoginPage() {
             {mode === 'login' ? 'Sign in' : 'Sign up'}
           </Button>
         </form>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-surface px-2 text-foreground-muted">Or</span>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full"
+          disabled={submitting}
+          onClick={async () => {
+            setSubmitting(true);
+            try {
+              await supabase.auth.signInWithPassword({
+                email: 'designer@reframely.local',
+                password: 'demo-password',
+              });
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          Explore with Demo Account
+        </Button>
 
         <button
           type="button"

@@ -1,0 +1,8 @@
+{
+  "name": "Reframely",
+  "description": "Import your website or AI-generated site and edit visually without burning AI credits.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

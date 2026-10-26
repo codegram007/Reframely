@@ -68,7 +68,9 @@ export function LandingPage() {
 /* Ambient world layer                                                          */
 /* -------------------------------------------------------------------------- */
 
-function AmbientField() {
+export { STOCK };
+
+export function AmbientField() {
   return (
     <div
       aria-hidden
@@ -93,7 +95,7 @@ function AmbientField() {
 /* Landing CTAs (animated; theme-aware via CSS utilities)                       */
 /* -------------------------------------------------------------------------- */
 
-function LandingPrimaryButton({
+export function LandingPrimaryButton({
   children,
   onClick,
   className,
@@ -122,7 +124,7 @@ function LandingPrimaryButton({
   );
 }
 
-function LandingGhostLink({
+export function LandingGhostLink({
   href,
   children,
   className,
@@ -132,15 +134,15 @@ function LandingGhostLink({
   className?: string;
 }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className={cn(
         'landing-btn-ghost inline-flex h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium text-foreground-muted',
         className,
       )}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 
@@ -148,7 +150,7 @@ function LandingGhostLink({
 /* Nav / footer                                                                 */
 /* -------------------------------------------------------------------------- */
 
-function SiteNav({ onCta }: { onCta: () => void }) {
+export function SiteNav({ onCta }: { onCta: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -172,25 +174,25 @@ function SiteNav({ onCta }: { onCta: () => void }) {
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-foreground-muted md:flex">
           {[
-            ['#how', 'How it works'],
-            ['#features', 'Features'],
-            ['#ai', 'AI assistant'],
-            ['#faq', 'FAQ'],
+            ['/how-it-works', 'How it works'],
+            ['/features', 'Features'],
+            ['/ai', 'AI assistant'],
+            ['/faq', 'FAQ'],
           ].map(([href, label]) => (
-            <a
+            <Link
               key={href}
-              href={href}
+              to={href}
               className="relative transition-colors hover:text-foreground after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 hover:after:scale-x-100"
             >
               {label}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Link
-            to="/app"
-            className="landing-btn-ghost hidden text-sm font-medium text-foreground-muted sm:inline-flex sm:h-9 sm:items-center sm:px-2"
+            to="/login"
+            className="landing-btn-ghost hidden text-sm font-medium text-foreground-muted sm:inline-flex sm:h-9 sm:items-center sm:px-3"
           >
             Sign in
           </Link>
@@ -203,21 +205,35 @@ function SiteNav({ onCta }: { onCta: () => void }) {
   );
 }
 
-function SiteFooter() {
+export function SiteFooter() {
   return (
     <footer className="relative z-10 border-t border-border/80 bg-surface/50 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <Logo />
-        <p className="text-xs text-foreground-subtle">
-          Edit AI-built sites visually — keep your credits for the big ideas.
-        </p>
-        <div className="flex gap-4 text-xs text-foreground-muted">
-          <Link to="/app" className="transition-colors hover:text-foreground">
-            Open app
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div>
+          <Logo />
+          <p className="mt-2 text-xs text-foreground-subtle">
+            Edit AI-built sites visually — keep your credits for the big ideas.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-5 text-xs text-foreground-muted">
+          <Link to="/how-it-works" className="transition-colors hover:text-foreground">
+            How it works
           </Link>
-          <a href="#faq" className="transition-colors hover:text-foreground">
+          <Link to="/features" className="transition-colors hover:text-foreground">
+            Features
+          </Link>
+          <Link to="/ai" className="transition-colors hover:text-foreground">
+            AI Assistant
+          </Link>
+          <Link to="/faq" className="transition-colors hover:text-foreground">
             FAQ
-          </a>
+          </Link>
+          <Link to="/login" className="transition-colors hover:text-foreground">
+            Sign in
+          </Link>
+          <Link to="/app" className="font-medium text-accent transition-colors hover:underline">
+            Open App
+          </Link>
         </div>
       </div>
     </footer>

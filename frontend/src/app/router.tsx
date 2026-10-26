@@ -1,17 +1,27 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { RequireAuth } from '@/auth/require-auth';
+import { createBrowserRouter } from 'react-router-dom';
+import { ProtectedRoute } from '@/auth/protected-route';
 import { AppShell } from '@/components/shell/app-shell';
 import { DashboardPage } from '@/pages/dashboard-page';
 import { EditorPage } from '@/pages/editor-page';
 import { ComingSoonPage } from '@/pages/coming-soon-page';
 import { LoginPage } from '@/pages/login-page';
+import { LandingPage } from '@/pages/landing-page';
+import { HowItWorksPage } from '@/pages/how-it-works-page';
+import { FeaturesPage } from '@/pages/features-page';
+import { AiAssistantPage } from '@/pages/ai-assistant-page';
+import { FaqPage } from '@/pages/faq-page';
 import { NotFoundPage } from '@/pages/not-found-page';
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/login" replace /> },
+  { path: '/', element: <LandingPage /> },
+  { path: '/how-it-works', element: <HowItWorksPage /> },
+  { path: '/features', element: <FeaturesPage /> },
+  { path: '/ai', element: <AiAssistantPage /> },
+  { path: '/ai-assistant', element: <AiAssistantPage /> },
+  { path: '/faq', element: <FaqPage /> },
   { path: '/login', element: <LoginPage /> },
   {
-    element: <RequireAuth />,
+    element: <ProtectedRoute />,
     children: [
       {
         element: <AppShell />,

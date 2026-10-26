@@ -77,13 +77,13 @@ const envSchema = z.object({
    *   s3  — MinIO/S3 (default)
    *   fs  — filesystem under LOCAL_DATA_DIR (no MinIO needed)
    */
-  STORAGE_BACKEND: z.enum(['s3', 'fs']).default('s3'),
+  STORAGE_BACKEND: z.enum(['s3', 'fs']).default('fs'),
   /**
    * Import metadata backend:
-   *   postgres — PgImportRepository (default)
-   *   file     — JsonFileImportRepository under LOCAL_DATA_DIR
+   *   postgres — PgImportRepository
+   *   file     — JsonFileImportRepository under LOCAL_DATA_DIR (default)
    */
-  IMPORT_REPO_BACKEND: z.enum(['postgres', 'file']).default('postgres'),
+  IMPORT_REPO_BACKEND: z.enum(['postgres', 'file']).default('file'),
   LOCAL_DATA_DIR: z.string().default('.data'),
 });
 

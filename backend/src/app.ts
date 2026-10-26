@@ -1,6 +1,9 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyPluginAsync } from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
+import fastifyStatic from '@fastify/static';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { authPlugin } from './plugins/auth.js';
@@ -69,7 +72,7 @@ export function buildApp(deps: AppDeps = {}) {
     .map((origin) => origin.trim())
     .filter(Boolean);
   app.register(cors, {
-    origin: allowedOrigins.includes('*') ? '*' : allowedOrigins,
+    origin: allowedOrigins.includes('*') || allowedOrigins.length === 0 ? true : allowedOrigins,
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['authorization', 'content-type'],
   });
@@ -81,45 +84,75 @@ export function buildApp(deps: AppDeps = {}) {
     });
   }
 
-  app.register(healthRoutes);
-  if (deps.importService) {
-    app.register(importRoutes(deps.importService));
-  }
-  if (deps.snapshotService) {
-    app.register(snapshotRoutes(deps.snapshotService));
-  }
-  if (deps.classifierService) {
-    app.register(classifyRoutes(deps.classifierService));
-  }
-  if (deps.codegenService) {
-    app.register(generateRoutes(deps.codegenService));
-  }
-  if (deps.exportService) {
-    app.register(exportRoutes(deps.exportService));
-  }
-  if (deps.assetService) {
-    app.register(assetRoutes(deps.assetService));
-  }
-  if (deps.versionService) {
-    app.register(versionRoutes(deps.versionService));
-  }
-  if (deps.projectTreeService) {
-    app.register(treeRoutes(deps.projectTreeService));
-  }
-  if (deps.deployService) {
-    app.register(deployRoutes(deps.deployService));
-  }
-  if (deps.aiAgentService) {
-    app.register(assistantRoutes(deps.aiAgentService));
-  }
-  if (deps.cleanupService) {
-    app.register(cleanupRoutes(deps.cleanupService));
-  }
+  const apiModule: FastifyPluginAsync = async (api) => {
+    api.register(healthRoutes);
+    if (deps.importService) {
+      api.register(importRoutes(deps.importService));
+    }
+    if (deps.snapshotService) {
+      api.register(snapshotRoutes(deps.snapshotService));
+    }
+    if (deps.classifierService) {
+      api.register(classifyRoutes(deps.classifierService));
+    }
+    if (deps.codegenService) {
+      api.register(generateRoutes(deps.codegenService));
+    }
+    if (deps.exportService) {
+      api.register(exportRoutes(deps.exportService));
+    }
+    if (deps.assetService) {
+      api.register(assetRoutes(deps.assetService));
+    }
+    if (deps.versionService) {
+      api.register(versionRoutes(deps.versionService));
+    }
+    if (deps.projectTreeService) {
+      api.register(treeRoutes(deps.projectTreeService));
+    }
+    if (deps.deployService) {
+      api.register(deployRoutes(deps.deployService));
+    }
+    if (deps.aiAgentService) {
+      api.register(assistantRoutes(deps.aiAgentService));
+    }
+    if (deps.cleanupService) {
+      api.register(cleanupRoutes(deps.cleanupService));
+    }
+  };
+
+  // Register API routes under both /api and root
+  app.register(apiModule, { prefix: '/api' });
+  app.register(apiModule);
+
   if (deps.pageSyncHub) {
     // Register at the root so `app.injectWS` is available to tests and so the
     // upgrade path shares the same auth hooks as HTTP routes.
     app.register(websocket);
     app.register(syncRoutes(deps.pageSyncHub));
+  }
+
+  // Frontend static files and SPA fallback
+  const candidateDists = [
+    resolve(process.cwd(), 'frontend', 'dist'),
+    resolve(process.cwd(), '..', 'frontend', 'dist'),
+    resolve(process.cwd(), 'dist'),
+  ];
+  const frontendDist = candidateDists.find((d) => existsSync(d));
+
+  if (frontendDist) {
+    app.register(fastifyStatic, {
+      root: frontendDist,
+      prefix: '/',
+    });
+
+    app.setNotFoundHandler((request, reply) => {
+      const url = request.raw.url ?? '';
+      if (url.startsWith('/api/') || url === '/api') {
+        return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'API route not found' } });
+      }
+      return reply.sendFile('index.html');
+    });
   }
 
   return app;

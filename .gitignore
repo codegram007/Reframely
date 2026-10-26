@@ -15,6 +15,7 @@ backend/.env
 frontend/.env
 
 # Local runtime data
+.data/
 backend/.data/
 *.log
 npm-debug.log*
